@@ -2,7 +2,7 @@ import logging
 import os
 import shutil
 
-from src.constant import TIMESTAMP
+from finance.constant import TIMESTAMP
 
 LOG_DIR = "logs"
 

@@ -17,9 +17,8 @@ def get_requirements_list() -> List[str]:
     return This function is going to return a list which contain name
     of libraries mentioned in requirements.txt file
     """
-    with open(REQUIREMENTS_FILE, "r") as requirement_file:
-        requirements_list = requirement_file.readlines()
-        requirements_list = [requirements_name.replace("\n", " ") for requirements_name in requirements_list]
+    with open(REQUIREMENTS_FILE, "r") as file_obj:
+        requirements_list = file_obj.read().splitlines()
         if HYPHEN_E_DOT in requirements_list:
             requirements_list.remove(HYPHEN_E_DOT)
         return requirements_list
@@ -27,10 +26,10 @@ def get_requirements_list() -> List[str]:
 
 
 setup(
-    name = PROJECT_NAME,
-    version= VERSION,
-    author= AUTHOR,
-    description= DESRCIPTION,
+    name = 'Financial Product Complaint',
+    version= '0.0.1',
+    author= 'Tiyyagura Chandra Reddy',
+    author_email= "tchandrareddy21@gmail.com",
     packages = find_packages(),
     install_requires = get_requirements_list()
 )
