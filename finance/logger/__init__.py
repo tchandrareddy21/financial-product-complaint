@@ -2,7 +2,7 @@ import logging
 import os
 import shutil
 
-from finance.constant import TIMESTAMP
+from finance.constants import TIMESTAMP
 
 LOG_DIR = "logs"
 
@@ -19,7 +19,7 @@ os.makedirs(LOG_DIR, exist_ok=True)
 
 LOG_FILE_PATH = os.path.join(LOG_DIR, LOG_FILE_NAME)
 
-logging.basicConfig(filename= LOG_FILE_NAME,
+logging.basicConfig(filename= LOG_FILE_PATH,
                     filemode= "w",
                     format = '[%(asctime)s] \t%(levelname)s \t%(filename)s \t%(lineno)d \t%(funcName)s\t%(message)s',
                     

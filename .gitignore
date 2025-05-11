@@ -146,3 +146,5 @@ dmypy.json
 .pyre/
 /test.ipynb
 /test1.csv
+finance-artifact
+logs

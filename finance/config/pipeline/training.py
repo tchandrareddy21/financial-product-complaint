@@ -1,0 +1,96 @@
+from time import strftime
+import os, sys
+from datetime import datetime
+from finance.logger import logger
+from finance.exception import FinancialException
+from finance.entity.config_entity import (TrainingPipelineConfig,
+                                          DataIngestionConfig)
+from finance.constants.training_pipeline_constants import *
+from finance.constants import TIMESTAMP
+from finance.utils import create_directories
+from finance.entity.metadata_entity import DataIngestionMetadata
+
+class FinanceConfig:
+    def __init__(self, pipeline_name=PIPELINE_NAME, timestamp = TIMESTAMP):
+        """
+        Initializes the FinanceConfig class with the given pipeline name and timestamp.
+        Args:
+            pipeline_name (str): The name of the pipeline.
+            timestamp (str): The timestamp for the pipeline run.
+        Returns:
+            None
+        """
+        self.timestamp = timestamp
+        self.pipeline_name = pipeline_name
+        self.pipeline_config = self.get_pipeline_config()
+        
+    def get_pipeline_config(self) -> TrainingPipelineConfig:
+        """
+        Returns the pipeline configuration.
+        Args:
+            None
+        Returns:
+            TrainingPipelineConfig: The pipeline configuration.
+        """
+        try:
+            artifact_dir = PIPELINE_ARTIFACT_DIR
+            pipeline_config = TrainingPipelineConfig(
+                pipeline_name=self.pipeline_name,
+                artifact_dir=artifact_dir
+            )
+            logger.info(f"Pipeline config: {pipeline_config}")
+            return pipeline_config
+        except Exception as e:
+            raise FinancialException(e, sys)
+    
+    def get_data_ingestion_config(self, from_date=DATA_INGESTION_MIN_START_DATE, to_date=None) -> DataIngestionConfig:
+        """
+        Returns the data ingestion configuration.
+        Args:
+            from_date (str): The start date for data ingestion.
+            to_date (str): The end date for data ingestion.
+        Returns:
+            DataIngestionConfig: The data ingestion configuration.
+        """
+        try:
+            min_start_date = datetime.strptime(DATA_INGESTION_MIN_START_DATE, "%Y-%m-%d")
+            from_date_obj = datetime.strptime(from_date, "%Y-%m-%d")
+            if from_date_obj < min_start_date:
+                from_date = DATA_INGESTION_MIN_START_DATE
+            if to_date is None:
+                to_date = datetime.now().strftime("%Y-%m-%d")
+            
+            # Master directory for data ingestion
+            # we will store metadata information and ingested file to avoid redundant download               
+            data_ingestion_master_dir = os.path.join(self.pipeline_config.artifact_dir,
+                                                     DATA_INGESTION_DIR)
+
+            # Time based directory for each run
+            data_ingestion_dir = os.path.join(data_ingestion_master_dir,
+                                              self.timestamp)
+            
+            metadata_file_path = os.path.join(data_ingestion_dir,
+                                              DATA_INGESTION_METADATA_FILE_NAME)
+            
+            data_ingestion_metadata = DataIngestionMetadata(metadata_file_path=metadata_file_path)
+            
+            if data_ingestion_metadata.is_metadata_file_present:
+                metadata_info = data_ingestion_metadata.get_metadata_info()
+                from_date = metadata_info.to_date
+                
+            data_ingestion_config = DataIngestionConfig(
+                from_date=from_date,
+                to_date=to_date,
+                data_ingestion_dir=data_ingestion_dir,
+                download_dir=os.path.join(data_ingestion_dir, DATA_INGESTION_DOWNLOADED_DATA_DIR),
+                file_name=DATA_INGESTION_FILE_NAME,
+                feature_store_dir=os.path.join(data_ingestion_master_dir, DATA_INGESTION_FEATURE_STORE_DIR),
+                failed_dir=os.path.join(data_ingestion_dir, DATA_INGESTION_FAILED_DIR),
+                metadata_file_path=metadata_file_path,
+                datasource_url=DATA_INGESTION_DATA_SOURCE_URL
+            )
+        
+            logger.info(f"Data ingestion config: {data_ingestion_config}")
+            return data_ingestion_config
+        except Exception as e:
+            raise FinancialException(e, sys)
