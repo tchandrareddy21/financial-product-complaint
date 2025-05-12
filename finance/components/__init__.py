@@ -1,1 +1,2 @@
 from finance.components.training.data_ingestion import DataIngestion
+from finance.components.training.data_validation import DataValidation

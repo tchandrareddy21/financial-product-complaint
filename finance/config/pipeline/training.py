@@ -4,7 +4,8 @@ from datetime import datetime
 from finance.logger import logger
 from finance.exception import FinancialException
 from finance.entity.config_entity import (TrainingPipelineConfig,
-                                          DataIngestionConfig)
+                                          DataIngestionConfig,
+                                          DataValidationConfig)
 from finance.constants.training_pipeline_constants import *
 from finance.constants import TIMESTAMP
 from finance.utils import create_directories
@@ -92,5 +93,24 @@ class FinanceConfig:
         
             logger.info(f"Data ingestion config: {data_ingestion_config}")
             return data_ingestion_config
+        except Exception as e:
+            raise FinancialException(e, sys)
+
+    def get_data_validation_config(self) -> DataValidationConfig:
+        """
+        
+        """
+        try:
+            data_validation_dir = os.path.join(self.pipeline_config.artifact_dir,DATA_VALIDATION_DIR, self.timestamp)
+            accepted_data_dir = os.path.join(data_validation_dir, DATA_VALIDATION_ACCEPTED_DATA_DIR)
+            rejected_data_dir = os.path.join(data_validation_dir, DATA_VALIDATION_REJECTED_DATA_DIR)
+
+            data_validation_config = DataValidationConfig(
+                accepted_data_dir=accepted_data_dir,
+                rejected_data_dir=rejected_data_dir,
+                file_name=DATA_VALIDATION_FILE_NAME
+            )
+            logger.info(f"Data validation config: {data_validation_config}")
+            return data_validation_config
         except Exception as e:
             raise FinancialException(e, sys)

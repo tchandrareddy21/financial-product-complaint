@@ -37,7 +37,7 @@ class DataIngestion:
         n_diff_days = (end_date - start_date).days
         freq = None
         if n_diff_days > 365:
-            freq = "Y"
+            freq = "YE"
         elif n_diff_days > 30:
             freq = "ME"
         elif n_diff_days > 7:
