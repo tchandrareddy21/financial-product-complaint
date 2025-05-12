@@ -7,7 +7,14 @@ load_dotenv()
 access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
 secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
 
-spark_session = SparkSession.builder.appName("finance_complaint").getOrCreate()
+spark_session = SparkSession.builder \
+    .master("local[*]") \
+    .appName("finance_complaint") \
+    .config("spark.executor.instances", "1") \
+    .config("spark.executor.memory", "10g") \
+    .config("spark.driver.memory", "10g") \
+    .config("spark.executor.memoryOverhead", "12g") \
+    .getOrCreate()
 
 # spark_session = SparkSession.builder.master('local[*]').appName("finance_complaint") \
 #     .config("spark.executor.instance", "1") \
