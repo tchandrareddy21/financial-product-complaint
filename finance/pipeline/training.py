@@ -2,8 +2,8 @@ import sys
 from finance.exception import FinancialException
 from finance.logger import logger
 from finance.config.pipeline.training import FinanceConfig
-from finance.components import DataIngestion, DataValidation, DataTransformation
-from finance.entity.artifact_entity import DataIngestionArtifact, DataValidationArtifact, DataTransformationArtifact
+from finance.components import DataIngestion, DataValidation, DataTransformation, ModelTrainer
+from finance.entity.artifact_entity import DataIngestionArtifact, DataValidationArtifact, DataTransformationArtifact, ModelTrainerArtifact
 
 class TrainingPipeline:
 
@@ -42,6 +42,16 @@ class TrainingPipeline:
             return data_transformation_artifact
         except Exception as e:
             raise FinancialException(e, sys)
+    
+    def start_model_trainer(self, data_transformation_artifact: DataTransformationArtifact) -> ModelTrainerArtifact:
+        try:
+            model_trainer = ModelTrainer(data_transformation_artifact=data_transformation_artifact,
+                                         model_trainer_config=self.finance_config.get_model_trainer_config()
+                                         )
+            model_trainer_artifact = model_trainer.initiate_model_training()
+            return model_trainer_artifact
+        except Exception as e:
+            raise FinancialException(e, sys)
 
     
     def start(self):
@@ -49,5 +59,6 @@ class TrainingPipeline:
             data_ingestion_artifact = self.start_data_ingestion()
             data_validation_artifact = self.start_data_validation(data_ingestion_artifact=data_ingestion_artifact)
             data_transformation_artifact = self.start_data_transformation(data_validation_artifact=data_validation_artifact)
+            model_trainer_artifact = self.start_model_trainer(data_transformation_artifact=data_transformation_artifact)
         except Exception as e:
             raise FinancialException(e, sys)

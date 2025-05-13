@@ -6,7 +6,8 @@ from finance.exception import FinancialException
 from finance.entity.config_entity import (TrainingPipelineConfig,
                                           DataIngestionConfig,
                                           DataValidationConfig,
-                                          DataTransformationConfig)
+                                          DataTransformationConfig,
+                                          ModelTrainerConfig)
 from finance.constants.training_pipeline_constants import *
 from finance.constants import TIMESTAMP
 from finance.utils import create_directories
@@ -141,5 +142,25 @@ class FinanceConfig:
 
             logger.info(f"Data transformation config: {data_transformation_config}")
             return data_transformation_config
+        except Exception as e:
+            raise FinancialException(e, sys)
+
+    def get_model_trainer_config(self) -> ModelTrainerConfig:
+        try:
+            model_trainer_dir = os.path.join(self.pipeline_config.artifact_dir,
+                                             MODEL_TRAINER_DIR, self.timestamp)
+            trained_model_file_path = os.path.join(
+                model_trainer_dir, MODEL_TRAINER_TRAINED_MODEL_DIR, MODEL_TRAINER_MODEL_NAME
+            )
+            label_indexer_model_dir = os.path.join(
+                model_trainer_dir, MODEL_TRAINER_LABEL_INDEXER_DIR
+            )
+            model_trainer_config = ModelTrainerConfig(base_accuracy=MODEL_TRAINER_BASE_ACCURACY,
+                                                      trained_model_file_path=trained_model_file_path,
+                                                      metric_list=MODEL_TRAINER_MODEL_METRIC_NAMES,
+                                                      label_indexer_model_dir=label_indexer_model_dir
+                                                      )
+            logger.info(f"Model trainer config: {model_trainer_config}")
+            return model_trainer_config
         except Exception as e:
             raise FinancialException(e, sys)

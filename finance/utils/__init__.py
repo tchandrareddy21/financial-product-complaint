@@ -3,6 +3,8 @@ import yaml
 import shutil
 import sys
 from typing import List
+from pyspark.sql import DataFrame
+from pyspark.ml.evaluation import MulticlassClassificationEvaluator
 from finance.exception import FinancialException
 from finance.logger import logger
 
@@ -40,5 +42,17 @@ def create_directories(directories_list: List[str], new_directory=False):
                 logger.info(f"Directory removed: {dir_path}")
             os.makedirs(dir_path, exist_ok=True)
             logger.info(f"Directory created: {dir_path}")
+    except Exception as e:
+        raise FinancialException(e, sys)
+
+def get_score(dataframe: DataFrame, metric_name, label_col, prediction_col) -> float:
+    try:
+        evaluator = MulticlassClassificationEvaluator(
+            labelCol=label_col, predictionCol=prediction_col,
+            metricName=metric_name)
+        score = evaluator.evaluate(dataframe)
+        print(f"{metric_name} score: {score}")
+        logger.info(f"{metric_name} score: {score}")
+        return score
     except Exception as e:
         raise FinancialException(e, sys)
