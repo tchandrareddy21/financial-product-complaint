@@ -12,8 +12,8 @@ def get_log_file_name():
 LOG_FILE_NAME = get_log_file_name()
 
 # Clearing old log files
-if os.path.exists(LOG_DIR):
-    shutil.rmtree(LOG_DIR)
+# if os.path.exists(LOG_DIR):
+#     shutil.rmtree(LOG_DIR)
 
 os.makedirs(LOG_DIR, exist_ok=True)
 

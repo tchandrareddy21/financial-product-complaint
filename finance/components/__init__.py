@@ -3,3 +3,4 @@ from finance.components.training.data_validation import DataValidation
 from finance.components.training.data_transformation import DataTransformation
 from finance.components.training.model_trainer import ModelTrainer
 from finance.components.training.model_evaluation import ModelEvaluation
+from finance.components.training.model_pusher import ModelPusher

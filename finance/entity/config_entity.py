@@ -33,3 +33,5 @@ ModelEvaluationConfig = namedtuple("ModelEvaluationConfig",["model_evaluation_re
                                                             "metric_list",
                                                             "model_dir",
                                                             "bucket_name"])
+
+ModelPusherConfig = namedtuple("ModelPusherConfig", ["model_dir", "bucket_name"])

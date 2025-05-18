@@ -8,7 +8,8 @@ from finance.entity.config_entity import (TrainingPipelineConfig,
                                           DataValidationConfig,
                                           DataTransformationConfig,
                                           ModelTrainerConfig,
-                                          ModelEvaluationConfig)
+                                          ModelEvaluationConfig,
+                                          ModelPusherConfig)
 from finance.constants.training_pipeline_constants import *
 from finance.constants import TIMESTAMP
 from finance.utils import create_directories
@@ -188,4 +189,15 @@ class FinanceConfig:
             return model_evaluation_config
 
         except Exception as e:
+            raise FinancialException(e, sys)
+
+    def get_model_pusher_config(self) -> ModelPusherConfig:
+        try:
+            model_pusher_config = ModelPusherConfig(
+                model_dir=S3_MODEL_DIR_KEY,
+                bucket_name=S3_MODEL_BUCKET_NAME
+            )
+            logger.info(f"Model pusher config: {model_pusher_config}")
+            return model_pusher_config
+        except  Exception as e:
             raise FinancialException(e, sys)
