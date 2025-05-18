@@ -1,1 +1,2 @@
 from finance.pipeline.training import TrainingPipeline
+from finance.pipeline.prediction import PredictionPipeline

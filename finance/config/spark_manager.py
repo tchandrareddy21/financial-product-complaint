@@ -1,6 +1,6 @@
+from pyspark.sql import SparkSession
 import os
 from dotenv import load_dotenv
-from pyspark.sql import SparkSession
 
 load_dotenv()
 
@@ -14,22 +14,13 @@ spark_session = SparkSession.builder \
     .config("spark.executor.memory", "10g") \
     .config("spark.driver.memory", "10g") \
     .config("spark.executor.memoryOverhead", "12g") \
+    .config("spark.jars.packages", "org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.11.1026") \
     .getOrCreate()
 
-# spark_session = SparkSession.builder.master('local[*]').appName("finance_complaint") \
-#     .config("spark.executor.instance", "1") \
-#     .config("spark.executor.memory", "6g") \
-#     .config("spark.driver.memory", "6g") \
-#     .config("spark.executor.memoryOverhead", "8g") \
-#     .config("spark.jars.packages", "com.amazonaws:aws-java-sdk:1.7.4,org.apache.hadoop:hadoop-aws:2.7.3") \
-#     .getOrCreate()
-
-# To access S3 bucket
-spark_session._jsc.hadoopConfiguration().set("fs.s3a.awsAccessKeyId", access_key_id)
-spark_session._jsc.hadoopConfiguration().set("fs.s3a.awsSecretAccessKey", secret_access_key)
-spark_session._jsc.hadoopConfiguration().set("fs.s3a.impl","org.apache.hadoop.fs.s3a.S3AFileSystem")
-spark_session._jsc.hadoopConfiguration().set("fs.s3a.impl","org.apache.hadoop.fs.s3native.NativeS3FileSystem")
-spark_session._jsc.hadoopConfiguration().set("com.amazonaws.services.s3.enableV4", "true")
-spark_session._jsc.hadoopConfiguration().set("fs.s3a.aws.credentials.provider","org.apache.hadoop.fs.s3a.BasicAWSCredentialsProvider")
-spark_session._jsc.hadoopConfiguration().set("fs.s3a.endpoint", "ap-south-1.amazonaws.com")
-spark_session._jsc.hadoopConfiguration().set(" fs.s3.buffer.dir","tmp")
+hadoop_conf = spark_session._jsc.hadoopConfiguration()
+hadoop_conf.set("fs.s3a.access.key", access_key_id)
+hadoop_conf.set("fs.s3a.secret.key", secret_access_key)
+hadoop_conf.set("fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
+hadoop_conf.set("com.amazonaws.services.s3.enableV4", "true")
+hadoop_conf.set("fs.s3a.endpoint", "s3.ap-south-1.amazonaws.com")
+hadoop_conf.set("fs.s3a.aws.credentials.provider", "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
