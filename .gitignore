@@ -144,7 +144,8 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-/test.ipynb
+test.ipynb
 /test1.csv
 finance-artifact
 logs
+.lightning_studio

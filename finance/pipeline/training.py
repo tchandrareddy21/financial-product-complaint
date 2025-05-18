@@ -2,8 +2,8 @@ import sys
 from finance.exception import FinancialException
 from finance.logger import logger
 from finance.config.pipeline.training import FinanceConfig
-from finance.components import DataIngestion, DataValidation, DataTransformation, ModelTrainer
-from finance.entity.artifact_entity import DataIngestionArtifact, DataValidationArtifact, DataTransformationArtifact, ModelTrainerArtifact
+from finance.components import DataIngestion, DataValidation, DataTransformation, ModelTrainer, ModelEvaluation
+from finance.entity.artifact_entity import DataIngestionArtifact, DataValidationArtifact, DataTransformationArtifact, ModelTrainerArtifact, ModelEvaluationArtifact
 
 class TrainingPipeline:
 
@@ -52,6 +52,17 @@ class TrainingPipeline:
             return model_trainer_artifact
         except Exception as e:
             raise FinancialException(e, sys)
+    
+    def start_model_evaluation(self, data_validation_artifact, model_trainer_artifact) -> ModelEvaluationArtifact:
+        try:
+            model_eval_config = self.finance_config.get_model_evaluation_config()
+            model_eval = ModelEvaluation(data_validation_artifact=data_validation_artifact,
+                                         model_trainer_artifact=model_trainer_artifact,
+                                         model_eval_config=model_eval_config
+                                         )
+            return model_eval.initiate_model_evaluation()
+        except Exception as e:
+            raise FinancialException(e, sys)
 
     
     def start(self):
@@ -60,5 +71,8 @@ class TrainingPipeline:
             data_validation_artifact = self.start_data_validation(data_ingestion_artifact=data_ingestion_artifact)
             data_transformation_artifact = self.start_data_transformation(data_validation_artifact=data_validation_artifact)
             model_trainer_artifact = self.start_model_trainer(data_transformation_artifact=data_transformation_artifact)
+            model_evaluation_artifact = self.start_model_evaluation(data_validation_artifact=data_validation_artifact,
+                                                              model_trainer_artifact=model_trainer_artifact
+                                                              )
         except Exception as e:
             raise FinancialException(e, sys)
