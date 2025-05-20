@@ -150,3 +150,8 @@ finance-artifact
 logs
 .lightning_studio
 finance_data
+airflow/airflow.db
+airflow/airflow.cfg
+.windsurf-server
+.cursor-server
+airflow/simple_auth_manager_passwords.json.generated
