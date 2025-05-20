@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "financial-product-complaint"
+version = "v0.0.1"
+authors = [{name = "Chandra Reddy Tiyyagura", email = "tchandrareddy21@gmail.com"}]
+description = "Complaints can give us insights into problems people are experiencing in the marketplace and help us to undestand the reason and do necessary modification in exisiting financial product if required."
+readme = "README.md"
+requires-python = "==3.11.12"
+dependencies = [
+    "apache-airflow==3.0.1",
+    "boto3==1.38.19",
+    "pandas==2.2.3",
+    "pyspark==3.5.5",
+    "python-dotenv==1.1.0",
+    "pyyaml==6.0.2",
+    "requests==2.32.3",
+]
+
+[tool.setuptools]
+package-dir = {"" = "finance"}
+include-package-data = true
