@@ -37,9 +37,9 @@ class DataIngestion:
         n_diff_days = (end_date - start_date).days
         freq = None
         if n_diff_days > 365:
-            freq = "YE"
+            freq = "Y"
         elif n_diff_days > 30:
-            freq = "ME"
+            freq = "M"
         elif n_diff_days > 7:
             freq = "W"
         logger.debug(f"{n_diff_days} hence freq: {freq}")
