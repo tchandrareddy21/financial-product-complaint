@@ -1,19 +1,11 @@
 from datetime import datetime
-from airflow.sdk import dag, task
+from airflow.sdk import DAG
+from textwrap import dedent
 from airflow.providers.standard.operators.python import PythonOperator
-from finance.pipeline.training import TrainingPipeline
-from finance.config.pipeline.training import FinanceConfig
-from finance.entity.artifact_entity import (DataIngestionArtifact,
-                                            DataValidationArtifact,
-                                            DataTransformationArtifact,
-                                            ModelTrainerArtifact,
-                                            PartialModelTrainerRefArtifact,
-                                            PartialModelTrainerMetricArtifact,
-                                            ModelEvaluationArtifact,
-                                            ModelPusherArtifact)
-training_pipeline = TrainingPipeline(FinanceConfig())
 
-@dag(
+training_pipeline=None
+
+with DAG(
     dag_id="finance_product_complaint",
     default_args={'retries': 2},
     description="Machine Learning PySpark Project",
@@ -21,90 +13,176 @@ training_pipeline = TrainingPipeline(FinanceConfig())
     start_date=datetime(2025, 4, 10),
     catchup=False,
     tags=['PySpark', 'finance']
-)
-    
-def finance_pipeline():
+) as dag:
 
-    @task()
-    def data_ingestion():
-        """
-        Task to start data ingestion and return the artifact as a dict
-        """
+    from finance.pipeline.training import TrainingPipeline
+    from finance.config.pipeline.training import FinanceConfig
+
+    training_pipeline = TrainingPipeline(FinanceConfig())
+    
+
+    def data_ingestion(**kwargs):
+        from finance.entity.artifact_entity import (DataIngestionArtifact,
+                                            DataValidationArtifact,
+                                            DataTransformationArtifact,
+                                            ModelTrainerArtifact,
+                                            PartialModelTrainerRefArtifact,
+                                            PartialModelTrainerMetricArtifact,
+                                            ModelEvaluationArtifact,
+                                            ModelPusherArtifact)
+        ti = kwargs['ti']
         data_ingestion_artifact = training_pipeline.start_data_ingestion()
-        return data_ingestion_artifact._asdict() if hasattr(data_ingestion_artifact, '_asdict') else dict(data_ingestion_artifact)
+        print(data_ingestion_artifact)
+        ti.xcom_push('data_ingestion_artifact', data_ingestion_artifact)
     
-    @task()
-    def data_validation(data_ingestion_artifact: dict):
-        """
-        Task to validate the data using the ingestion artifact
-        """
-        data_validation_artifact = training_pipeline.start_data_validation(*(data_ingestion_artifact))
-        return (
-            data_validation_artifact._asdict()
-            if hasattr(data_validation_artifact, "_asdict")
-            else dict(data_validation_artifact)
-        )
+
+    def data_validation(**kwargs):
+        from finance.entity.artifact_entity import (DataIngestionArtifact,
+                                            DataValidationArtifact,
+                                            DataTransformationArtifact,
+                                            ModelTrainerArtifact,
+                                            PartialModelTrainerRefArtifact,
+                                            PartialModelTrainerMetricArtifact,
+                                            ModelEvaluationArtifact,
+                                            ModelPusherArtifact)
+        ti  = kwargs['ti']
+        data_ingestion_artifact = ti.xcom_pull(task_ids="data_ingestion",key="data_ingestion_artifact")
+        data_ingestion_artifact=DataIngestionArtifact(*(data_ingestion_artifact))
+        data_validation_artifact=training_pipeline.start_data_validation(data_ingestion_artifact=data_ingestion_artifact)
+        ti.xcom_push('data_validation_artifact', data_validation_artifact)
     
-    @task()
-    def data_transformation(data_ingestion_artifact: dict, data_validation_artifact: dict):
-        """
-        Task to transform the data using the ingestion and validation artifacts
-        """
-        data_transformation_artifact = training_pipeline.start_data_transformation(
-            *(data_ingestion_artifact), *(data_validation_artifact)
+
+
+    def data_transformation(**kwargs):
+        from finance.entity.artifact_entity import (DataIngestionArtifact,
+                                            DataValidationArtifact,
+                                            DataTransformationArtifact,
+                                            ModelTrainerArtifact,
+                                            PartialModelTrainerRefArtifact,
+                                            PartialModelTrainerMetricArtifact,
+                                            ModelEvaluationArtifact,
+                                            ModelPusherArtifact)
+        ti  = kwargs['ti']
+
+        data_ingestion_artifact = ti.xcom_pull(task_ids="data_ingestion",key="data_ingestion_artifact")
+        data_ingestion_artifact=DataIngestionArtifact(*(data_ingestion_artifact))
+
+        data_validation_artifact = ti.xcom_pull(task_ids="data_validation",key="data_validation_artifact")
+        data_validation_artifact=DataValidationArtifact(*(data_validation_artifact))
+        data_transformation_artifact=training_pipeline.start_data_transformation(
+        data_validation_artifact=data_validation_artifact
         )
-        return (
-            data_transformation_artifact._asdict()
-            if hasattr(data_transformation_artifact, "_asdict")
-            else dict(data_transformation_artifact)
-        )
+        ti.xcom_push('data_transformation_artifact', data_transformation_artifact)
+
+
+    def model_trainer(**kwargs):
+        from finance.entity.artifact_entity import (DataIngestionArtifact,
+                                            DataValidationArtifact,
+                                            DataTransformationArtifact,
+                                            ModelTrainerArtifact,
+                                            PartialModelTrainerRefArtifact,
+                                            PartialModelTrainerMetricArtifact,
+                                            ModelEvaluationArtifact,
+                                            ModelPusherArtifact)
+        ti  = kwargs['ti']
+
+        data_transformation_artifact = ti.xcom_pull(task_ids="data_transformation",key="data_transformation_artifact")
+        data_transformation_artifact=DataTransformationArtifact(*(data_transformation_artifact))
+
+        model_trainer_artifact=training_pipeline.start_model_trainer(data_transformation_artifact=data_transformation_artifact)
+
+        ti.xcom_push('model_trainer_artifact', model_trainer_artifact._asdict())
+
+
+    def model_evaluation(**kwargs):
+        from finance.entity.artifact_entity import (DataIngestionArtifact,
+                                            DataValidationArtifact,
+                                            DataTransformationArtifact,
+                                            ModelTrainerArtifact,
+                                            PartialModelTrainerRefArtifact,
+                                            PartialModelTrainerMetricArtifact,
+                                            ModelEvaluationArtifact,
+                                            ModelPusherArtifact)
+        ti  = kwargs['ti']
+        data_ingestion_artifact = ti.xcom_pull(task_ids="data_ingestion",key="data_ingestion_artifact")
+        data_ingestion_artifact=DataIngestionArtifact(*(data_ingestion_artifact))
+
+        data_validation_artifact = ti.xcom_pull(task_ids="data_validation",key="data_validation_artifact")
+        data_validation_artifact=DataValidationArtifact(*(data_validation_artifact))
+
+        model_trainer_artifact = ti.xcom_pull(task_ids="model_trainer",key="model_trainer_artifact")
+        print(model_trainer_artifact)
+        model_trainer_artifact=ModelTrainerArtifact.construct_object(**model_trainer_artifact)
+
+        model_evaluation_artifact = training_pipeline.start_model_evaluation(data_validation_artifact=data_validation_artifact,
+                                                                    model_trainer_artifact=model_trainer_artifact)
+
     
-    @task()
-    def model_trainer(data_transformation_artifact: dict):
-        """
-        Task to train the model using the transformation artifact
-        """
-        model_trainer_artifact = training_pipeline.start_model_trainer(
-            *(data_transformation_artifact)
-        )
-        return (
-            model_trainer_artifact._asdict()
-        )
-    
-    @task()
-    def model_evaluation(data_ingestion_artifact: dict, data_validation_artifact: dict, model_trainer_artifact: dict):
-        """
-        Task to evaluate the model using the trainer artifact
-        """
-        ingestion_artifact = DataIngestionArtifact(*data_ingestion_artifact)
-        validation_artifact = DataValidationArtifact(*data_validation_artifact)
-        trainer_artifact = ModelTrainerArtifact.construct_object(**model_trainer_artifact)
-        evaluation_artifact = training_pipeline.start_model_evaluation(
-            data_validation_artifact=validation_artifact,
-            model_trainer_artifact=trainer_artifact
-        )
-        return evaluation_artifact.to_dict()
-    
-    @task
-    def push_model(model_evaluation_artifact: dict, model_trainer_artifact: dict):
-        evaluation_artifact = ModelEvaluationArtifact(*model_evaluation_artifact)
-        trainer_artifact = ModelTrainerArtifact.construct_object(**model_trainer_artifact)
-        if evaluation_artifact.model_accepted:
-            pusher_artifact = training_pipeline.start_model_pusher(trainer_artifact)
-            print(f'Model pusher artifact: {pusher_artifact}')
+        ti.xcom_push('model_evaluation_artifact', model_evaluation_artifact.to_dict())
+
+
+    def push_model(**kwargs):
+        from finance.entity.artifact_entity import (DataIngestionArtifact,
+                                            DataValidationArtifact,
+                                            DataTransformationArtifact,
+                                            ModelTrainerArtifact,
+                                            PartialModelTrainerRefArtifact,
+                                            PartialModelTrainerMetricArtifact,
+                                            ModelEvaluationArtifact,
+                                            ModelPusherArtifact)
+        ti  = kwargs['ti']
+        model_evaluation_artifact = ti.xcom_pull(task_ids="model_evaluation",key="model_evaluation_artifact")
+        model_evaluation_artifact=ModelEvaluationArtifact(*(model_evaluation_artifact))
+        model_trainer_artifact = ti.xcom_pull(task_ids="model_trainer",key="model_trainer_artifact")
+        model_trainer_artifact=ModelTrainerArtifact.construct_object(**model_trainer_artifact)
+
+        if model_evaluation_artifact.model_accepted:
+            model_pusher_artifact = training_pipeline.start_model_pusher(model_trainer_artifact=model_trainer_artifact)
+            print(f'Model pusher artifact: {model_pusher_artifact}')
         else:
             print("Trained model rejected.")
-        print("Training pipeline completed.")
+            print("Trained model rejected.")
+        print("Training pipeline completed")
+    
 
+    data_ingestion = PythonOperator(
+        task_id='data_ingestion',
+        python_callable=data_ingestion,
+    )
+    data_ingestion.doc_md = dedent(
+        """\
+    #### Extract task
+    A simple Extract task to get data ready for the rest of the data pipeline.
+    In this case, getting data is simulated by reading from a hardcoded JSON string.
+    This data is then put into xcom, so that it can be processed by the next task.
+    """
+    )
 
+    data_validation = PythonOperator(
+        task_id="data_validation",
+        python_callable=data_validation
 
-    # Define DAG dependencies using chaining
-    ingestion = data_ingestion()
-    validation = data_validation(ingestion)
-    transformation = data_transformation(ingestion, validation)
-    trainer = model_trainer(transformation)
-    evaluation = model_evaluation(ingestion, validation, trainer)
-    push_model(evaluation, trainer)
+    )
 
+    data_transformation = PythonOperator(
+        task_id ="data_transformation",
+        python_callable=data_transformation
+    )
 
-finance_pipeline()
+    model_trainer = PythonOperator(
+        task_id="model_trainer", 
+        python_callable=model_trainer
+
+    )
+
+    model_evaluation = PythonOperator(
+        task_id="model_evaluation", python_callable=model_evaluation
+    )   
+
+    push_model  =PythonOperator(
+            task_id="push_model",
+            python_callable=push_model
+
+    )
+
+    data_ingestion >> data_validation >> data_transformation >> model_trainer >> model_evaluation >> push_model
