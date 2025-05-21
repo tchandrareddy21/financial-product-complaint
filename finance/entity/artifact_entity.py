@@ -20,7 +20,7 @@ PartialModelTrainerMetricArtifact = namedtuple("PartialModelTrainerMetricArtifac
                                                                                     "recall_score"]) 
 
 class ModelTrainerArtifact:
-    def __init__(self, model_trainer_ref_artifact: PartialModelTrainerMetricArtifact,
+    def __init__(self, model_trainer_ref_artifact: PartialModelTrainerRefArtifact,
                 model_trainer_train_metric_artifact: PartialModelTrainerMetricArtifact,                     
                 model_trainer_test_metric_artifact: PartialModelTrainerMetricArtifact):
         self.model_trainer_ref_artifact = model_trainer_ref_artifact
@@ -29,7 +29,7 @@ class ModelTrainerArtifact:
 
     @staticmethod
     def construct_object(**kwargs):
-        model_trainer_ref_artifact=PartialModelTrainerMetricArtifact(**(kwargs['model_trainer_ref_artifcat']))
+        model_trainer_ref_artifact=PartialModelTrainerRefArtifact(**(kwargs['model_trainer_ref_artifact']))
         model_trainer_train_metric_artifact=PartialModelTrainerMetricArtifact(**(kwargs['model_trainer_train_metric_artifact']))
         model_trainer_test_metric_artifact=PartialModelTrainerMetricArtifact(**(kwargs['model_trainer_test_metric_artifact']))
         model_trainer_artifact = ModelTrainerArtifact(model_trainer_ref_artifact,
@@ -49,16 +49,27 @@ class ModelTrainerArtifact:
 
 class ModelEvaluationArtifact:
 
-    def __init__(self, model_accepted, changed_accuracy, trained_model_path, best_model_path, active,*args,**kwargs):
+    def __init__(self, model_accepted, changed_accuracy, trained_model_path, best_model_path, active, *args, **kwargs):
         self.model_accepted = model_accepted
         self.changed_accuracy = changed_accuracy
         self.trained_model_path = trained_model_path
         self.best_model_path = best_model_path
         self.active = active
         self.created_timestamp = datetime.now()
+        # Store any additional keyword arguments
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
     def to_dict(self):
-        return  self.__dict__
+        result = self.__dict__.copy()
+        # Convert ObjectId to string if present
+        if '_id' in result and hasattr(result['_id'], '__str__'):
+            result['_id'] = str(result['_id'])
+        # Convert datetime to string for JSON serialization
+        if 'created_timestamp' in result and isinstance(result['created_timestamp'], datetime):
+            result['created_timestamp'] = result['created_timestamp'].isoformat()
+        return result
+
 
 
 ModelPusherArtifact = namedtuple("ModelEvaluationArtifact", ["model_pushed_dir"])
