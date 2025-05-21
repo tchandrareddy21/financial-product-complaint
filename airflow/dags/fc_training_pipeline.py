@@ -94,6 +94,27 @@ def finance_pipeline():
         
         return model_trainer_artifact._asdict()
     
+    # @task()
+    # def model_evaluation(data_validation_artifact: dict, model_trainer_artifact: dict):
+    #     """
+    #     Task to evaluate the trained model
+    #     """
+    #     # Reconstruct validation artifact
+    #     validation_artifact = DataValidationArtifact(
+    #         accepted_file_path=data_validation_artifact['accepted_file_path'],
+    #         rejected_dir=data_validation_artifact['rejected_dir']
+    #     )
+        
+    #     # Reconstruct model trainer artifact using custom constructor
+    #     trainer_artifact = ModelTrainerArtifact.construct_object(**model_trainer_artifact)
+        
+    #     model_evaluation_artifact = training_pipeline.start_model_evaluation(
+    #         data_validation_artifact=validation_artifact,
+    #         model_trainer_artifact=trainer_artifact
+    #     )
+        
+    #     return model_evaluation_artifact.to_dict()
+
     @task()
     def model_evaluation(data_validation_artifact: dict, model_trainer_artifact: dict):
         """
@@ -105,15 +126,60 @@ def finance_pipeline():
             rejected_dir=data_validation_artifact['rejected_dir']
         )
         
-        # Reconstruct model trainer artifact using custom constructor
-        trainer_artifact = ModelTrainerArtifact.construct_object(**model_trainer_artifact)
+        # First, correct the model_trainer_artifact structure if needed
+        if 'model_trainer_ref_artifact' in model_trainer_artifact:
+            # Ensure we're using the correct artifact type for each component
+            ref_data = model_trainer_artifact['model_trainer_ref_artifact']
+            train_data = model_trainer_artifact['model_trainer_train_metric_artifact']
+            test_data = model_trainer_artifact['model_trainer_test_metric_artifact']
+            
+            # Create the appropriate artifacts with correct types
+            ref_artifact = PartialModelTrainerRefArtifact(
+                trained_model_file_path=ref_data['trained_model_file_path'],
+                label_indexer_model_file_path=ref_data['label_indexer_model_file_path']
+            )
+            
+            train_metric_artifact = PartialModelTrainerMetricArtifact(
+                f1_score=train_data['f1_score'],
+                precision_score=train_data['precision_score'],
+                recall_score=train_data['recall_score']
+            )
+            
+            test_metric_artifact = PartialModelTrainerMetricArtifact(
+                f1_score=test_data['f1_score'],
+                precision_score=test_data['precision_score'],
+                recall_score=test_data['recall_score']
+            )
+            
+            # Manually construct the model_trainer_artifact
+            trainer_artifact = ModelTrainerArtifact(
+                model_trainer_ref_artifact=ref_artifact,
+                model_trainer_train_metric_artifact=train_metric_artifact,
+                model_trainer_test_metric_artifact=test_metric_artifact
+            )
+        else:
+            # Fallback to using the construct_object method if structure has been fixed
+            trainer_artifact = ModelTrainerArtifact.construct_object(**model_trainer_artifact)
         
+        # Evaluate the model
         model_evaluation_artifact = training_pipeline.start_model_evaluation(
             data_validation_artifact=validation_artifact,
             model_trainer_artifact=trainer_artifact
         )
         
-        return model_evaluation_artifact.to_dict()
+        # Convert to dictionary and ensure ObjectId is properly handled
+        result = model_evaluation_artifact.to_dict()
+        
+        # Handle ObjectId serialization
+        if '_id' in result and hasattr(result['_id'], '__str__'):
+            result['_id'] = str(result['_id'])
+            
+        # Handle datetime serialization
+        if 'created_timestamp' in result and hasattr(result['created_timestamp'], 'isoformat'):
+            result['created_timestamp'] = result['created_timestamp'].isoformat()
+            
+        return result
+
     
     @task()
     def push_model(model_evaluation_artifact: dict, model_trainer_artifact: dict):
