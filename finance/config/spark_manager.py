@@ -14,7 +14,7 @@ spark_session = SparkSession.builder \
     .config("spark.executor.memory", "10g") \
     .config("spark.driver.memory", "10g") \
     .config("spark.executor.memoryOverhead", "12g") \
-    .config("spark.jars.packages", "org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.11.1026") \
+    .config("spark.jars.packages", "org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.12.262") \
     .getOrCreate()
 
 hadoop_conf = spark_session._jsc.hadoopConfiguration()
