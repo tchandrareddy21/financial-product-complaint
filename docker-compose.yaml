@@ -1,14 +1,15 @@
+version: "3"
 
 networks:
     monitoring:
       driver: bridge
   
-  volumes:
+volumes:
     prometheus_data: {}
     influxdb-storage: {}
     grafana-storage: {}
-  
-  services:
+
+services:
     application:
       build: .
       #image: ${IMAGE_NAME}
@@ -42,7 +43,7 @@ networks:
         - influxdb-storage:/var/lib/influxdb
       environment:
         INFLUXDB_DB: actualdb
-  
+    
     grafana-server:
       image: grafana/grafana-enterprise:latest
       container_name: grafana-server
@@ -58,7 +59,7 @@ networks:
         - influxdb
       volumes:
         - grafana-storage:/var/lib/grafana
-  
+    
     node-exporter:
       image: prom/node-exporter:latest
       container_name: node-exporter
@@ -78,7 +79,7 @@ networks:
         - "9100:9100"
       networks:
         - monitoring
-  
+    
     promtail:
       image: grafana/promtail
       container_name: promtail
@@ -91,7 +92,7 @@ networks:
        - "9080:9080"
       networks:
         - monitoring
-  
+    
     loki:
       image: grafana/loki
       container_name: loki
@@ -100,7 +101,7 @@ networks:
       command: -config.file=/etc/loki/local-config.yaml
       networks:
         - monitoring
-  
+    
     prometheus:
       image: prom/prometheus:latest
       container_name: prometheus
