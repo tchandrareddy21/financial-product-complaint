@@ -1,3 +1,2 @@
-#!bin/sh
-nohup airflow scheduler &
-airflow webserver
+#!/usr/bin/env bash
+airflow standalone
