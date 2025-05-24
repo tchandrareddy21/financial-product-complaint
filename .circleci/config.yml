@@ -49,7 +49,7 @@ jobs:
 
   continuous-deployment:
     machine: true
-    resource_class: tchandrareddy/self-hosted
+    resource_class: tchandrareddy21/self-hosted
     environment:
       REPOSITORY: financial-product-complaint
       GAR_IMAGE_NAME: financial-product-complaint
