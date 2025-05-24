@@ -71,10 +71,10 @@ jobs:
           command: gcloud auth configure-docker $GOOGLE_COMPUTE_ZONE-docker.pkg.dev
       - run:
           name: pull image from private repository
-          command: docker pull $GOOGLE_COMPUTE_ZONE-docker.pkg.dev/${GOOGLE_PROJECT_ID}/$REPOSITOORY/$GAR_IMAGE_NAME:$IMAGE_TAG
+          command: docker pull ${GOOGLE_COMPUTE_ZONE}-docker.pkg.dev/${GOOGLE_PROJECT_ID}/$REPOSITORY/$GAR_IMAGE_NAME:$IMAGE_TAG
       - run:
           name: set env variable
-          command: echo 'export IMAGE_NAME="$GOOGLE_COMPUTE_ZONE-docker.pkg.dev/${GOOGLE_PROJECT_ID}/$REPOSITOORY/$IMAGE_NAME:$IMAGE_TAG"' >> "$BASH_ENV"
+          command: echo 'export IMAGE_NAME="$GOOGLE_COMPUTE_ZONE-docker.pkg.dev/${GOOGLE_PROJECT_ID}/$REPOSITORY/$IMAGE_NAME:$IMAGE_TAG"' >> "$BASH_ENV"
       - run:
           name: start the containers
           command: docker compose up -d
