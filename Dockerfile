@@ -12,8 +12,8 @@ ENV AIRFLOW__CORE__DAGBAG_IMPORT_TIMEOUT=1000
 ENV AIRFLOW__CORE__ENABLE_XCOM_PICKLING=True
 # ENV PYSPARK_PYTHON=/usr/bin/python3
 # ENV PYSPARK_DRIVER_PYTHON=/usr/bin/python3
-ENV PYSPARK_PYTHON=/app/.venv/bin/python3.12
-ENV PYSPARK_DRIVER_PYTHON=/app/.venv/bin/python3.12
+ENV PYSPARK_PYTHON=/app/.venv/bin/python
+ENV PYSPARK_DRIVER_PYTHON=/app/.venv/bin/python
 
 # Install system dependencies
 RUN apt-get update -y \
@@ -32,9 +32,9 @@ WORKDIR /app
 COPY . .
 
 # Create Python virtual environment and install deps via uv
-RUN uv venv .venv --python=python3.12 && \
+RUN uv venv .venv --python=python3.11.12 && \
     . .venv/bin/activate && \
-    uv pip install -r requirements.txt && \
+    uv pip install -r pyproject.toml && \
     uv pip install -e .
 
 # Ensure airflow DB is migrated
