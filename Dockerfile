@@ -10,14 +10,16 @@ ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64/
 ENV AIRFLOW_HOME="/app/airflow"
 ENV AIRFLOW__CORE__DAGBAG_IMPORT_TIMEOUT=1000
 ENV AIRFLOW__CORE__ENABLE_XCOM_PICKLING=True
-ENV PYSPARK_PYTHON=/usr/bin/python3
-ENV PYSPARK_DRIVER_PYTHON=/usr/bin/python3
+# ENV PYSPARK_PYTHON=/usr/bin/python3
+# ENV PYSPARK_DRIVER_PYTHON=/usr/bin/python3
+ENV PYSPARK_PYTHON=/app/.venv/bin/python3.12
+ENV PYSPARK_DRIVER_PYTHON=/app/.venv/bin/python3.12
 
 # Install system dependencies
 RUN apt-get update -y \
  && apt-get install -y software-properties-common \
  && add-apt-repository ppa:deadsnakes/ppa \
- && apt-get install -y openjdk-8-jdk python3 python3-venv curl ca-certificates build-essential \
+ && apt-get install -y openjdk-8-jdk curl ca-certificates build-essential \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
@@ -30,9 +32,9 @@ WORKDIR /app
 COPY . .
 
 # Create Python virtual environment and install deps via uv
-RUN uv venv .venv --python=python3.12 && \
+RUN python3.12 -m venv .venv && \
     . .venv/bin/activate && \
-    uv pip install -r pyproject.toml && \
+    uv pip install -r requirements.txt && \
     uv pip install -e .
 
 # Ensure airflow DB is migrated
