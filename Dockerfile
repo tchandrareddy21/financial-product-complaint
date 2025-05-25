@@ -32,7 +32,7 @@ WORKDIR /app
 COPY . .
 
 # Create Python virtual environment and install deps via uv
-RUN uv venv .venv --python=python3.11.12 && \
+RUN uv venv .venv --python=3.12.3 && \
     . .venv/bin/activate && \
     uv pip install -r pyproject.toml && \
     uv pip install -e .
