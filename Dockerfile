@@ -47,3 +47,4 @@ RUN echo '#!/bin/sh\nairflow standalone' > start.sh && chmod 777 start.sh
 # Activate venv & run start.sh on container start
 ENTRYPOINT ["/bin/sh", "-c"]
 CMD [". .venv/bin/activate && ./start.sh"]
+
