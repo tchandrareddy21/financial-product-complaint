@@ -32,7 +32,7 @@ WORKDIR /app
 COPY . .
 
 # Create Python virtual environment and install deps via uv
-RUN python3.12 -m venv .venv && \
+RUN uv venv .venv --python=python3.12 && \
     . .venv/bin/activate && \
     uv pip install -r requirements.txt && \
     uv pip install -e .
