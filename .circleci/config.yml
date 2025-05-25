@@ -78,7 +78,10 @@ jobs:
       - run:
           name: start the containers
           command: docker compose up -d
-          
+      - run:
+          name: fix file permissions to avoid cleanup error
+          command: sudo chown -R $USER:$USER .
+        
 workflows:
   CICD:
     jobs:
