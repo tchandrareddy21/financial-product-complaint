@@ -8,3 +8,6 @@
 - The problem is to identify registered complaint will be disputed by customer or not.
 
 [Database Link](https://www.consumerfinance.gov/data-research/consumer-complaints/)
+
+
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/tchandrareddy21/financial-product-complaint/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/tchandrareddy21/financial-product-complaint/tree/main)
